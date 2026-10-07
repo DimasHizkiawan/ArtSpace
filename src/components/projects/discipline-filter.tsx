@@ -9,9 +9,11 @@ const tab =
 
 type Props = {
   active: Discipline | undefined;
+  /** Halaman yang difilter. Bawaan "/" (galeri); pakai "/explore" di Eksplorasi. */
+  basePath?: string | undefined;
 };
 
-export function DisciplineFilter({ active }: Props) {
+export function DisciplineFilter({ active, basePath = "/" }: Props) {
   const router = useRouter();
 
   const items: Array<{
@@ -39,7 +41,7 @@ export function DisciplineFilter({ active }: Props) {
 
     const query = params.toString();
 
-    router.replace(query ? `/?${query}` : "/", {
+    router.replace(query ? `${basePath}?${query}` : basePath, {
       scroll: false,
     });
   }

@@ -1,18 +1,26 @@
 import Link from "next/link";
-import { ArrowRight, Compass, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, Sparkles } from "lucide-react";
 import { DisciplineFilter } from "@/components/projects/discipline-filter";
 import { ProjectGrid } from "@/components/projects/project-grid";
+import { SearchBar } from "@/components/search/search-bar";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { isDiscipline } from "@/lib/constants";
-import { getProjects } from "@/lib/data/repository";
+import { searchProjects } from "@/lib/data/repository";
+import { cleanQuery, firstParam } from "@/lib/search";
 
-type Props = { searchParams: Promise<{ disiplin?: string | string[] | undefined }> };
+type Props = {
+  searchParams: Promise<{
+    disiplin?: string | string[] | undefined;
+    q?: string | string[] | undefined;
+  }>;
+};
 
 export default async function GalleryPage({ searchParams }: Props) {
-  const { disiplin } = await searchParams;
-  const raw = Array.isArray(disiplin) ? disiplin[0] : disiplin;
+  const params = await searchParams;
+  const q = cleanQuery(firstParam(params.q));
+  const raw = firstParam(params.disiplin);
   const active = isDiscipline(raw) ? raw : undefined;
-  const projects = await getProjects(active);
+  const projects = await searchProjects({ q, discipline: active });
 
   return (
     <div className="space-y-12 pb-8 sm:space-y-16">
@@ -51,14 +59,28 @@ export default async function GalleryPage({ searchParams }: Props) {
             Lihat semua <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-line bg-canvas px-3 py-2 text-sm text-muted">
-          <Search className="size-4" aria-hidden="true" />
-          <span className="sr-only">Pencarian:</span>
-          <span>Filter berdasarkan disiplin untuk mempersempit galeri</span>
-        </div>
+        <SearchBar
+          basePath="/"
+          q={q}
+          disiplin={active}
+          label="Cari karya atau kreator"
+          placeholder="Cari judul, kreator, atau disiplin"
+        />
         <DisciplineFilter active={active} />
+        <p role="status" className="text-sm text-muted">
+          {q ? `${projects.length} karya untuk “${q}”` : `${projects.length} karya`}
+        </p>
         {projects.length === 0 ? (
-          <EmptyState title="Belum ada karya" description="Belum ada karya pada disiplin ini. Coba disiplin lain atau tampilkan semua." actionHref="/" actionLabel="Tampilkan semua" />
+          <EmptyState
+            title={q ? "Karya tidak ditemukan" : "Belum ada karya"}
+            description={
+              q
+                ? `Tidak ada karya yang cocok dengan “${q}”. Coba kata kunci lain, atau lihat kreator di Eksplorasi.`
+                : "Belum ada karya pada disiplin ini. Coba disiplin lain atau tampilkan semua."
+            }
+            actionHref="/"
+            actionLabel={q ? "Hapus pencarian" : "Tampilkan semua"}
+          />
         ) : (
           <ProjectGrid projects={projects} />
         )}
