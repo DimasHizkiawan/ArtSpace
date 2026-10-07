@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --canvas: #ffffff;
+  --surface: #f7f6f9;
+  --ink: #17141f;
+  --muted: #5f5b6b;
+  --line: #e4e1ea;
+  --iris: #5b34c9;
+  --cobalt: #1f4fd8;
+  --berry: #b0173f;
+  --on-accent: #ffffff;
+}
+
+.dark {
+  --canvas: #0f0d14;
+  --surface: #17141f;
+  --ink: #f3f1f7;
+  --muted: #a9a4b8;
+  --line: #2c283a;
+  --iris: #9b7bff;
+  --cobalt: #6e94ff;
+  --berry: #ff6b94;
+  --on-accent: #0f0d14;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-iris: var(--iris);
+  --color-cobalt: var(--cobalt);
+  --color-berry: var(--berry);
+  --color-on-accent: var(--on-accent);
+  --font-sans: var(--font-sans-src), system-ui, sans-serif;
+  --font-display: var(--font-display-src), Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background: var(--canvas);
+    color: var(--ink);
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  :focus-visible {
+    outline: 2px solid var(--cobalt);
+    outline-offset: 2px;
+  }
 }
