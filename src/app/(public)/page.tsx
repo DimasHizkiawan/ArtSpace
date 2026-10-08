@@ -28,9 +28,11 @@ export default async function GalleryPage({ searchParams }: Props) {
         <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-iris/15 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute -bottom-28 left-1/2 size-64 rounded-full bg-berry/10 blur-3xl" aria-hidden="true" />
         <div className="relative max-w-3xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+          {/* <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             <Sparkles className="size-3.5 text-berry" aria-hidden="true" /> Portofolio kreatif
-          </div>
+          </div> */}
+          <br />
+          <br />  
           <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Temukan karya yang membuatmu <span className="text-iris">berhenti sejenak.</span>
           </h1>
@@ -52,8 +54,7 @@ export default async function GalleryPage({ searchParams }: Props) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-berry">Discover</p>
-            <h2 id="galeri-heading" className="mt-1 font-display text-3xl">Karya pilihan</h2>
-            <p className="mt-1 text-sm text-muted">Lihat-lihat dulu. Login hanya saat kamu ingin berinteraksi.</p>
+            <h2 id="galeri-heading" className="mt-1 font-display text-3xl">Karya Proffesional</h2>
           </div>
           <Link href="/explore" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-iris hover:underline">
             Lihat semua <ArrowRight className="size-4" aria-hidden="true" />

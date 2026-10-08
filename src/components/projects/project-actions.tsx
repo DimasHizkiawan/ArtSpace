@@ -1,41 +1,41 @@
 "use client";
 
 import { Bookmark, Heart } from "lucide-react";
-import { useState } from "react";
 import { AuthModal } from "@/components/auth/auth-modal";
-
-type AuthAction = "like" | "save";
-
-const AUTH_TITLES: Record<AuthAction, string> = {
-  like: "Masuk untuk menyukai karya",
-  save: "Masuk untuk menyimpan karya",
-};
+import { cn } from "@/lib/utils";
+import { useInteractions } from "./use-interactions";
 
 const actionButton =
   "inline-flex min-h-11 items-center gap-2 rounded-xl border border-line bg-canvas px-4 text-sm font-semibold hover:border-ink";
 
-export function ProjectActions({ likes }: { likes: number }) {
-  const [authAction, setAuthAction] = useState<AuthAction | null>(null);
+export function ProjectActions({ projectId, likes }: { projectId: string; likes: number }) {
+  const { liked, saved, likeCount, request, modal } = useInteractions(projectId, likes);
 
   return (
     <>
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={() => setAuthAction("like")} className={actionButton}>
-          <Heart className="size-4 text-berry" aria-hidden="true" />
-          Sukai
-          <span className="font-normal text-muted">{likes}</span>
+        <button
+          type="button"
+          onClick={() => request("like")}
+          aria-pressed={liked}
+          className={actionButton}
+        >
+          <Heart className={cn("size-4 text-berry", liked && "fill-berry")} aria-hidden="true" />
+          {liked ? "Disukai" : "Sukai"}
+          <span className="font-normal text-muted">{likeCount}</span>
         </button>
-        <button type="button" onClick={() => setAuthAction("save")} className={actionButton}>
-          <Bookmark className="size-4" aria-hidden="true" />
-          Simpan
+        <button
+          type="button"
+          onClick={() => request("save")}
+          aria-pressed={saved}
+          className={actionButton}
+        >
+          <Bookmark className={cn("size-4", saved && "fill-iris text-iris")} aria-hidden="true" />
+          {saved ? "Tersimpan" : "Simpan"}
         </button>
       </div>
 
-      <AuthModal
-        open={authAction !== null}
-        title={AUTH_TITLES[authAction ?? "like"]}
-        onClose={() => setAuthAction(null)}
-      />
+      <AuthModal {...modal} />
     </>
   );
 }

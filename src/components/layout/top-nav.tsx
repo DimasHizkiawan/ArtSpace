@@ -1,7 +1,6 @@
 // src/components/layout/top-nav.tsx
-
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { AuthNav } from "./auth-nav";
 import { TopNavLinks } from "./nav-links";
 
 export function TopNav() {
@@ -13,10 +12,7 @@ export function TopNav() {
         </Link>
         <nav aria-label="Navigasi atas" className="flex items-center gap-2">
           <TopNavLinks />
-          <Link href="/masuk" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-ink px-4 text-sm font-semibold text-canvas hover:opacity-90">
-            <LogIn className="size-4" aria-hidden="true" />
-            <span>Masuk</span>
-          </Link>
+          <AuthNav />
         </nav>
       </div>
     </header>

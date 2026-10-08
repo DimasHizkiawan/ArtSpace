@@ -36,4 +36,15 @@ export const MOCK_PROJECTS: Project[] = [
   width: 1600,
   height: 1200,}
    },
+     { id: "7", slug: "kastil-estetik-cerah", title: "Kastil Bernuansa Cerah", creatorName: "Raka Pratama", creatorUsername: "rakap", discipline: "desain", year: 2025, likes: 204, tone: "berry", shape: "arc"
+    ,cover: {  src: "/images/castle.jpg",
+  alt: "-",
+  width: 1600,
+  height: 1200,} },
+  { id: "8", slug: "pagi-hari", title: "Pagi Hari yang Cerah", creatorName: "Dewi Anggraini", creatorUsername: "dewia", discipline: "ilustrasi", year: 2024, likes: 95, tone: "berry", shape: "bars"
+     ,cover: {  src: "/images/pagi.jpg",
+  alt: "-",
+  width: 1600,
+  height: 1200,}
+   },
 ];

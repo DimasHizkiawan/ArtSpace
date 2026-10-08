@@ -7,101 +7,68 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { PasswordField } from "@/components/ui/password-field";
-
-import {
-  signupSchema,
-  toFieldErrors,
-} from "@/lib/schemas/auth";
+import { SelectField } from "@/components/ui/select-field";
+import { DISCIPLINES } from "@/lib/constants";
+import { signUp } from "@/lib/local/auth";
+import { signupSchema, toFieldErrors } from "@/lib/schemas/auth";
 
 type Props = {
   onSuccess?: () => void;
 };
 
-const ORDER = [
-  "name",
-  "email",
-  "discipline",
-  "password",
-  "confirm",
-];
+const ORDER = ["name", "email", "discipline", "password", "confirm"];
 
-export function SignupForm({
-  onSuccess,
-}: Props) {
+export function SignupForm({ onSuccess }: Props) {
   const router = useRouter();
-
-  const [errors, setErrors] = useState<
-    Record<string, string>
-  >({});
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
 
-  async function onSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
+  function focusField(form: HTMLFormElement, name: string) {
+    const element = form.elements.namedItem(name);
+    if (element instanceof HTMLElement) element.focus();
+  }
 
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const form = event.currentTarget;
 
-    const result = signupSchema.safeParse(
-      Object.fromEntries(new FormData(form)),
-    );
-
+    const result = signupSchema.safeParse(Object.fromEntries(new FormData(form)));
     if (!result.success) {
       const next = toFieldErrors(result.error);
-
       setErrors(next);
-
-      const first = ORDER.find(
-        (key) => key in next,
-      );
-
-      const element = first
-        ? form.elements.namedItem(first)
-        : null;
-
-      if (element instanceof HTMLElement) {
-        element.focus();
-      }
-
+      const first = ORDER.find((key) => key in next);
+      if (first) focusField(form, first);
       return;
     }
 
     setErrors({});
     setPending(true);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 800),
-    );
+    const auth = await signUp({
+      name: result.data.name,
+      email: result.data.email,
+      discipline: result.data.discipline,
+      password: result.data.password,
+    });
+    if (!auth.ok) {
+      setPending(false);
+      setErrors({ [auth.field]: auth.message });
+      focusField(form, auth.field);
+      return;
+    }
 
-    /*
-     * Jika Signup digunakan di AuthModal,
-     * modal ditutup setelah berhasil.
-     */
+    // Di AuthModal: modal ditutup setelah berhasil.
     if (onSuccess) {
       onSuccess();
       return;
     }
-
-    /*
-     * Jika Signup digunakan sebagai halaman /daftar,
-     * tetap menuju halaman studio.
-     */
-    router.push("/studio/projects/new");
+    // Di halaman /daftar: lanjut ke beranda.
+    router.push("/beranda");
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      noValidate
-      className="space-y-5"
-    >
-      <Field
-        label="Nama lengkap"
-        name="name"
-        autoComplete="name"
-        error={errors.name}
-      />
+    <form onSubmit={onSubmit} noValidate className="space-y-5">
+      <Field label="Nama lengkap" name="name" autoComplete="name" error={errors.name} />
 
       <Field
         label="Email"
@@ -112,48 +79,14 @@ export function SignupForm({
         error={errors.email}
       />
 
-      <div>
-        <label
-          htmlFor="discipline"
-          className="mb-2 block text-sm font-semibold"
-        >
-          Disiplin utama
-        </label>
-
-        <select
-          id="discipline"
-          name="discipline"
-          defaultValue=""
-          className="min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm"
-          aria-invalid={Boolean(errors.discipline)}
-        >
-          <option value="" disabled>
-            Pilih disiplin
-          </option>
-
-          <option value="desain">
-            Desain
-          </option>
-
-          <option value="ilustrasi">
-            Ilustrasi
-          </option>
-
-          <option value="fotografi">
-            Fotografi
-          </option>
-
-          <option value="seni">
-            Seni rupa
-          </option>
-        </select>
-
-        {errors.discipline ? (
-          <p className="mt-1 text-sm text-berry">
-            {errors.discipline}
-          </p>
-        ) : null}
-      </div>
+      <SelectField
+        label="Disiplin utama"
+        name="discipline"
+        options={DISCIPLINES}
+        placeholder="Pilih disiplin"
+        defaultValue=""
+        error={errors.discipline}
+      />
 
       <PasswordField
         label="Kata sandi"
@@ -173,14 +106,11 @@ export function SignupForm({
       <Button
         type="submit"
         disabled={pending}
-        className="w-full"
+        className="w-full rounded-xl bg-ink text-canvas hover:opacity-90 hover:brightness-100"
       >
         {pending ? (
           <>
-            <Loader2
-              className="size-4 animate-spin"
-              aria-hidden="true"
-            />
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             Membuat akun…
           </>
         ) : (
