@@ -4,10 +4,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
-import { AuthModal } from "@/components/auth/auth-modal";
+import { LoginGate } from "@/components/auth/login-gate";
 import { ProjectCard } from "@/components/projects/project-card";
 import { cardGrid } from "@/components/ui/card-styles";
-import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useUserActivity } from "@/lib/local/activity";
 import { useAuth } from "@/lib/local/auth";
 import {
@@ -39,39 +39,25 @@ const EMPTY_TEXT: Record<Tab, { title: string; body: string }> = {
   },
 };
 
+const subtleLink = "font-semibold text-iris underline-offset-4 hover:underline";
+
 export function MemberHome({ serverProjects }: { serverProjects: Project[] }) {
   const { user, ready } = useAuth();
   const all = useAllProjects(serverProjects);
   const local = useLocalProjects();
   const { likedIds, savedIds } = useUserActivity();
   const [tab, setTab] = useState<Tab>("semua");
-  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
   if (!ready) {
-    return <div aria-busy="true" aria-label="Memuat beranda" className="h-64 animate-pulse rounded-3xl bg-surface" />;
+    return <div aria-busy="true" aria-label="Memuat beranda" className="h-40 animate-pulse rounded-2xl bg-surface" />;
   }
 
   if (!user) {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
-        <h1 className="font-display text-4xl">Masuk untuk membuka beranda</h1>
-        <p className="text-muted">
-          Setelah masuk, kamu bisa menyukai, menyimpan, mengomentari, dan mengunggah karya.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button type="button" onClick={() => setAuthMode("login")}>
-            Masuk
-          </Button>
-          <Button type="button" variant="outline" onClick={() => setAuthMode("signup")}>
-            Daftar
-          </Button>
-        </div>
-        <AuthModal
-          open={authMode !== null}
-          initialMode={authMode ?? "login"}
-          onClose={() => setAuthMode(null)}
-        />
-      </div>
+      <LoginGate
+        title="Masuk untuk membuka beranda"
+        body="Setelah masuk, kamu bisa menyukai, menyimpan, mengomentari, dan mengunggah karya."
+      />
     );
   }
 
@@ -79,11 +65,12 @@ export function MemberHome({ serverProjects }: { serverProjects: Project[] }) {
   const savedList = all.filter((p) => savedIds.has(p.id));
   const likedCount = all.filter((p) => likedIds.has(p.id)).length;
 
-  const stats = [
-    { label: "Karya saya", value: mine.length },
-    { label: "Tersimpan", value: savedList.length },
-    { label: "Disukai", value: likedCount },
-  ];
+  // Angka kecil di samping nama tab, bukan kotak statistik besar.
+  const counts: Record<Tab, number | null> = {
+    semua: null,
+    tersimpan: savedList.length,
+    saya: mine.length,
+  };
 
   function handleDelete(id: string, title: string) {
     if (window.confirm(`Hapus karya “${title}”? Tindakan ini tidak bisa dibatalkan.`)) {
@@ -96,50 +83,59 @@ export function MemberHome({ serverProjects }: { serverProjects: Project[] }) {
   const empty = EMPTY_TEXT[tab];
 
   return (
-    <div className="space-y-10 pb-8">
-      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-4xl leading-tight sm:text-5xl">
-            Halo, {user.name.split(" ")[0]}.
-          </h1>
-          <p className="mt-2 text-muted">Lihat karya terbaru, atau tambahkan karyamu sendiri.</p>
+    <div className="space-y-8 pb-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <UserAvatar name={user.name} src={user.avatar} size="md" />
+          <div className="min-w-0">
+            <h1 className="font-display text-3xl leading-tight">Halo, {user.name.split(" ")[0]}.</h1>
+            <p className="text-sm text-muted">
+              @{user.username} · {likedCount} karya kamu sukai ·{" "}
+              <Link href="/profil" className={subtleLink}>
+                Edit profil
+              </Link>
+              {" · "}
+              <Link href={`/creators/${user.username}`} className={subtleLink}>
+                Lihat profil
+              </Link>
+            </p>
+          </div>
         </div>
         <Link
           href="/studio/projects/new"
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ink px-5 font-semibold text-canvas hover:opacity-90"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-sm font-semibold text-canvas hover:opacity-90"
         >
           <Plus className="size-4" aria-hidden="true" />
           Unggah karya
         </Link>
       </header>
 
-      <dl className="grid grid-cols-3 divide-x divide-line rounded-2xl border border-line bg-canvas">
-        {stats.map((s) => (
-          <div key={s.label} className="px-4 py-4 sm:px-6">
-            <dt className="text-sm text-muted">{s.label}</dt>
-            <dd className="font-display text-3xl">{s.value}</dd>
-          </div>
-        ))}
-      </dl>
-
       <section aria-label="Daftar karya" className="space-y-5">
         <div role="group" aria-label="Pilih tampilan" className="flex gap-2 border-b border-line">
-          {TABS.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              aria-pressed={tab === t.value}
-              onClick={() => setTab(t.value)}
-              className={cn(
-                "-mb-px inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-medium",
-                tab === t.value
-                  ? "border-iris text-ink"
-                  : "border-transparent text-muted hover:text-ink",
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
+          {TABS.map((t) => {
+            const count = counts[t.value];
+            return (
+              <button
+                key={t.value}
+                type="button"
+                aria-pressed={tab === t.value}
+                onClick={() => setTab(t.value)}
+                className={cn(
+                  "-mb-px inline-flex min-h-11 items-center gap-1.5 border-b-2 px-3 text-sm font-medium",
+                  tab === t.value
+                    ? "border-iris text-ink"
+                    : "border-transparent text-muted hover:text-ink",
+                )}
+              >
+                {t.label}
+                {count !== null ? (
+                  <span aria-label={`${count} karya`} className="text-xs text-muted">
+                    {count}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
 
         <p role="status" className="text-sm text-muted">

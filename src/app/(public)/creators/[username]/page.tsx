@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { LocalCreatorView } from "@/components/creators/local-creator-view";
 import Link from "next/link";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { getCreatorByUsername, getProjectsByCreator } from "@/lib/data/repository";
@@ -7,7 +7,7 @@ import { ProjectGrid } from "@/components/projects/project-grid";
 export default async function CreatorPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const creator = await getCreatorByUsername(username);
-  if (!creator) notFound();
+   if (!creator) return <LocalCreatorView username={username} />;
   const projects = await getProjectsByCreator(username);
 
   return (

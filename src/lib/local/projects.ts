@@ -105,3 +105,14 @@ export function useAllProjects(serverProjects: Project[]): Project[] {
   const local = useLocalProjects();
   return useMemo(() => [...local.map(toProject), ...serverProjects], [local, serverProjects]);
 }
+
+/** Dipanggil saat nama atau username berubah, supaya karya lama ikut diperbarui. */
+export function renameCreator(userId: string, name: string, username: string): void {
+  const all = localProjectsStore.getSnapshot();
+  if (!all.some((p) => p.creatorId === userId)) return;
+  localProjectsStore.set(
+    all.map((p) =>
+      p.creatorId === userId ? { ...p, creatorName: name, creatorUsername: username } : p,
+    ),
+  );
+}

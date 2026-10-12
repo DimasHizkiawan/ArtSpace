@@ -1,26 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Compass, Sparkles } from "lucide-react";
-import { DisciplineFilter } from "@/components/projects/discipline-filter";
-import { ProjectGrid } from "@/components/projects/project-grid";
-import { SearchBar } from "@/components/search/search-bar";
-import { EmptyState } from "@/components/feedback/empty-state";
-import { isDiscipline } from "@/lib/constants";
-import { searchProjects } from "@/lib/data/repository";
-import { cleanQuery, firstParam } from "@/lib/search";
+import { ArrowRight, Compass } from "lucide-react";
+import { ProjectShelf } from "@/components/projects/project-shelf";
+import { DISCIPLINES, type Discipline } from "@/lib/constants";
+import { getProjects } from "@/lib/data/repository";
 
-type Props = {
-  searchParams: Promise<{
-    disiplin?: string | string[] | undefined;
-    q?: string | string[] | undefined;
-  }>;
+const SHELF_COPY: Record<Discipline, string> = {
+  desain: "Identitas visual, poster, dan layout.",
+  ilustrasi: "Karakter, suasana, dan cerita bergambar.",
+  fotografi: "Cerita kecil dari ruang kota dan sekitarnya.",
+  seni: "Bentuk, material, dan eksperimen visual.",
 };
 
-export default async function GalleryPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const q = cleanQuery(firstParam(params.q));
-  const raw = firstParam(params.disiplin);
-  const active = isDiscipline(raw) ? raw : undefined;
-  const projects = await searchProjects({ q, discipline: active });
+// Galeri = etalase pilihan yang dikurasi per disiplin. Pencarian ada di Eksplorasi.
+export default async function GalleryPage() {
+  const projects = await getProjects();
+  const shelves = DISCIPLINES.map((d) => ({
+    ...d,
+    projects: projects.filter((p) => p.discipline === d.value),
+  })).filter((shelf) => shelf.projects.length > 0);
 
   return (
     <div className="space-y-12 pb-8 sm:space-y-16">
@@ -28,11 +25,6 @@ export default async function GalleryPage({ searchParams }: Props) {
         <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-iris/15 blur-3xl" aria-hidden="true" />
         <div className="pointer-events-none absolute -bottom-28 left-1/2 size-64 rounded-full bg-berry/10 blur-3xl" aria-hidden="true" />
         <div className="relative max-w-3xl">
-          {/* <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-            <Sparkles className="size-3.5 text-berry" aria-hidden="true" /> Portofolio kreatif
-          </div> */}
-          <br />
-          <br />  
           <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
             Temukan karya yang membuatmu <span className="text-iris">berhenti sejenak.</span>
           </h1>
@@ -41,50 +33,47 @@ export default async function GalleryPage({ searchParams }: Props) {
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link href="#galeri" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ink px-5 font-semibold text-canvas hover:opacity-90">
-              Jelajahi karya <ArrowRight className="size-4" aria-hidden="true" />
+              Lihat galeri <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <Link href="/explore" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-line bg-canvas px-5 font-semibold hover:bg-surface">
-              <Compass className="size-4" aria-hidden="true" /> Eksplorasi kreator
+              <Compass className="size-4" aria-hidden="true" /> Cari di Eksplorasi
             </Link>
           </div>
         </div>
       </section>
 
-      <section id="galeri" aria-labelledby="galeri-heading" className="scroll-mt-24 space-y-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-berry">Discover</p>
-            <h2 id="galeri-heading" className="mt-1 font-display text-3xl">Karya Proffesional</h2>
-          </div>
-          <Link href="/explore" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-iris hover:underline">
-            Lihat semua <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
-        <SearchBar
-          basePath="/"
-          q={q}
-          disiplin={active}
-          label="Cari karya atau kreator"
-          placeholder="Cari judul, kreator, atau disiplin"
-        />
-        <DisciplineFilter active={active} />
-        <p role="status" className="text-sm text-muted">
-          {q ? `${projects.length} karya untuk “${q}”` : `${projects.length} karya`}
-        </p>
-        {projects.length === 0 ? (
-          <EmptyState
-            title={q ? "Karya tidak ditemukan" : "Belum ada karya"}
-            description={
-              q
-                ? `Tidak ada karya yang cocok dengan “${q}”. Coba kata kunci lain, atau lihat kreator di Eksplorasi.`
-                : "Belum ada karya pada disiplin ini. Coba disiplin lain atau tampilkan semua."
-            }
-            actionHref="/"
-            actionLabel={q ? "Hapus pencarian" : "Tampilkan semua"}
+      <section id="galeri" aria-labelledby="galeri-heading" className="scroll-mt-24 space-y-10">
+        {/* <div>
+          <h2 id="galeri-heading" className="font-display text-4xl">
+            Karya pilihan
+          </h2>
+        </div> */}
+
+        {shelves.map((shelf) => (
+          <ProjectShelf
+            key={shelf.value}
+            id={`rak-${shelf.value}`}
+            title={shelf.label}
+            description={SHELF_COPY[shelf.value]}
+            href={`/explore?disiplin=${shelf.value}`}
+            projects={shelf.projects}
           />
-        ) : (
-          <ProjectGrid projects={projects} />
-        )}
+        ))}
+      </section>
+
+      <section className="flex flex-col gap-4 rounded-2xl border border-line bg-canvas p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div>
+          <h2 className="font-display text-3xl">Mencari sesuatu yang spesifik?</h2>
+          <p className="mt-1 text-sm text-muted">
+            Cari berdasarkan judul, nama kreator, atau disiplin, dan temukan kreator baru.
+          </p>
+        </div>
+        <Link
+          href="/explore"
+          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-ink px-5 font-semibold text-canvas hover:opacity-90"
+        >
+          Buka Eksplorasi <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
       </section>
     </div>
   );

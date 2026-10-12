@@ -8,6 +8,10 @@ export const DISCIPLINES = [
 
 export type Discipline = (typeof DISCIPLINES)[number]["value"];
 
+export function disciplineName(value: string): string {
+  return DISCIPLINES.find((d) => d.value === value)?.label ?? "";
+}
+
 export function isDiscipline(value: string | undefined): value is Discipline {
   return DISCIPLINES.some((d) => d.value === value);
 }

@@ -4,7 +4,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn, LogOut } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { logOut, useAuth } from "@/lib/local/auth";
+
+const quietLink =
+  "inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted hover:text-ink";
 
 export function AuthNav() {
   const router = useRouter();
@@ -27,18 +31,16 @@ export function AuthNav() {
 
   return (
     <div className="flex items-center gap-1">
+      <Link href="/beranda" className={`${quietLink} hidden sm:inline-flex`}>
+        Beranda
+      </Link>
       <Link
-        href="/beranda"
-        aria-label={`Beranda ${user.name}`}
-        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-line px-3 text-sm font-semibold hover:border-ink"
+        href="/profil"
+        aria-label={`Profil ${user.name}`}
+        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-line px-2 text-sm font-semibold hover:border-ink sm:pr-3"
       >
-        <span
-          aria-hidden="true"
-          className="grid size-6 place-items-center rounded-full bg-ink text-xs font-bold text-canvas"
-        >
-          {user.name.charAt(0).toUpperCase()}
-        </span>
-        <span className="hidden sm:inline">Beranda</span>
+        <UserAvatar name={user.name} src={user.avatar} size="sm" className="size-6 text-xs" />
+        <span className="hidden max-w-24 truncate sm:inline">{user.name.split(" ")[0]}</span>
       </Link>
       <button
         type="button"
@@ -47,7 +49,7 @@ export function AuthNav() {
           router.push("/");
         }}
         aria-label="Keluar"
-        className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted hover:text-ink"
+        className={quietLink}
       >
         <LogOut className="size-4" aria-hidden="true" />
         <span className="hidden sm:inline">Keluar</span>

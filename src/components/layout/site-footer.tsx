@@ -10,7 +10,7 @@ const EXPLORE_LINKS: readonly FooterLink[] = [
 ];
 
 const DISCIPLINE_LINKS: readonly FooterLink[] = DISCIPLINES.map((d) => ({
-  href: `/?disiplin=${d.value}#galeri`,
+  href: `/explore?disiplin=${d.value}`,
   label: d.label,
 }));
 
@@ -65,7 +65,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col gap-1 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} ArtSpace. Prototipe tugas mahasiswa.</p>
+          <p>© {new Date().getFullYear()} ArtSpace.</p>
           <p>Portofolio kreatif untuk desainer, ilustrator, fotografer, dan seniman.</p>
         </div>
       </div>

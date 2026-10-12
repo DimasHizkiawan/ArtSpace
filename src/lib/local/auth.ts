@@ -3,6 +3,7 @@
 // Bukan keamanan sungguhan. Ganti dengan backend saat sudah tersedia.
 import { useMemo } from "react";
 import { MOCK_CREATORS } from "@/lib/data/mock-creators";
+import type { SocialLink } from "@/lib/social";
 import { createLocalStore, useHydrated, useLocalStore } from "./store";
 import { newId, slugify } from "./utils";
 
@@ -15,6 +16,11 @@ type StoredUser = {
   salt: string;
   passwordHash: string;
   createdAt: string;
+  // Profil. Opsional karena akun lama belum punya kolom ini.
+  bio?: string | undefined;
+  location?: string | undefined;
+  avatar?: string | null | undefined;
+  links?: SocialLink[] | undefined;
 };
 
 export type User = {
@@ -24,6 +30,11 @@ export type User = {
   username: string;
   discipline: string;
   createdAt: string;
+  bio: string;
+  location: string;
+  /** Foto profil sebagai data URL, atau null. */
+  avatar: string | null;
+  links: SocialLink[];
 };
 
 export type AuthResult =
@@ -41,6 +52,10 @@ function toUser(u: StoredUser): User {
     username: u.username,
     discipline: u.discipline,
     createdAt: u.createdAt,
+    bio: u.bio ?? "",
+    location: u.location ?? "",
+    avatar: u.avatar ?? null,
+    links: u.links ?? [],
   };
 }
 
@@ -123,6 +138,36 @@ export function logOut(): void {
   sessionStore.set(null);
 }
 
+export type ProfilePatch = {
+  name: string;
+  username: string;
+  discipline: string;
+  bio: string;
+  location: string;
+  avatar: string | null;
+  links: SocialLink[];
+};
+
+/** Username dipakai akun lain atau kreator bawaan? */
+export function isUsernameTaken(username: string, exceptUserId: string): boolean {
+  return (
+    usersStore.getSnapshot().some((u) => u.username === username && u.id !== exceptUserId) ||
+    MOCK_CREATORS.some((c) => c.username === username)
+  );
+}
+
+/** null jika akun tidak ada atau penyimpanan gagal. */
+export function updateUser(id: string, patch: ProfilePatch): User | null {
+  const users = usersStore.getSnapshot();
+  const index = users.findIndex((u) => u.id === id);
+  const current = users[index];
+  if (!current) return null;
+  const next: StoredUser = { ...current, ...patch };
+  const copy = [...users];
+  copy[index] = next;
+  return usersStore.set(copy) ? toUser(next) : null;
+}
+
 /** Untuk dipakai di event handler (bukan saat render). */
 export function getCurrentUser(): User | null {
   const id = sessionStore.getSnapshot();
@@ -139,4 +184,12 @@ export function useAuth(): { user: User | null; ready: boolean } {
     return found ? toUser(found) : null;
   }, [users, sessionId]);
   return { user, ready };
+}
+
+export function useUserByUsername(username: string): User | null {
+  const users = useLocalStore(usersStore);
+  return useMemo(() => {
+    const found = users.find((u) => u.username === username);
+    return found ? toUser(found) : null;
+  }, [users, username]);
 }

@@ -76,6 +76,20 @@ export function deleteComment(projectId: string, commentId: string): boolean {
   if (next.length === list.length) return false;
   return activityStore.set({ ...a, comments: { ...a.comments, [projectId]: next } });
 }
+/** Dipanggil saat nama atau username berubah, supaya komentar lama ikut diperbarui. */
+export function renameCommenter(userId: string, name: string, username: string): void {
+  const a = activityStore.getSnapshot();
+  let changed = false;
+  const comments: Record<string, Comment[]> = {};
+  for (const [projectId, list] of Object.entries(a.comments)) {
+    comments[projectId] = list.map((c) => {
+      if (c.userId !== userId) return c;
+      changed = true;
+      return { ...c, name, username };
+    });
+  }
+  if (changed) activityStore.set({ ...a, comments });
+}
 
 export function useProjectActivity(projectId: string, baseLikes = 0) {
   const activity = useLocalStore(activityStore);
