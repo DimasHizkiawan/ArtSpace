@@ -1,0 +1,423 @@
+1. Gambaran besar struktur ArtSpace
+ArtSpace adalah website portofolio kreatif. Berdasarkan isi proyek, aplikasinya memiliki fitur untuk:
+- Menampilkan galeri karya kreatif.
+- Mencari dan memfilter karya.
+- Melihat detail karya dan profil kreator.
+- Mendaftar dan masuk akun.
+- Menyukai, menyimpan, dan mengomentari karya.
+- Mengunggah serta mengelola karya sendiri.
+- Mengakses area Studio dan fitur kolaborasi.
+Struktur utamanya seperti ini.
+ArtSpace
+
+src/app/
+Halaman, routing, layout, API, dan CSS global.
+
+Prioritas 1
+
+src/components/
+Komponen antarmuka yang bisa dipakai ulang.
+
+Prioritas 1
+
+src/lib/
+Logika aplikasi, data, penyimpanan, validasi, dan utilitas.
+
+Prioritas 1
+
+src/types/
+Definisi bentuk data menggunakan TypeScript.
+
+
+tests/
+Pengujian fungsi aplikasi.
+
+
+File konfigurasi di root
+Pengaturan Next.js, TypeScript, dependensi, dan linting.
+
+
+
+
+Cara termudah memahami struktur ini adalah membayangkan sebuah restoran:
+- app adalah ruang dan jalur yang bisa dikunjungi pelanggan.
+- components adalah meja, menu, tombol, dan bagian tampilan yang digunakan berulang kali.
+- lib adalah dapur yang menjalankan proses di balik layar.
+- types adalah aturan bentuk data yang boleh digunakan.
+- tests adalah pemeriksaan apakah fungsi tertentu bekerja sesuai harapan.
+2. Memahami src/app/ — halaman dan routing
+Di Next.js App Router, struktur folder menentukan alamat URL. File page.tsx biasanya mendefinisikan halaman, sedangkan layout.tsx membungkus halaman-halaman di dalam lingkupnya.
+A. Halaman publik
+Lokasi: src/app/(public)/
+Folder (public) adalah route group. Tanda kurung membuatnya menjadi pengelompokan internal, bukan bagian dari URL.
+File	Fungsi
+(public)/page.tsx	Halaman utama galeri ArtSpace (/).
+(public)/beranda/page.tsx	Halaman /beranda.
+(public)/explore/page.tsx	Halaman eksplorasi, pencarian, atau penyaringan karya (/explore).
+(public)/creators/[username]/page.tsx	Profil kreator berdasarkan username.
+(public)/projects/[slug]/page.tsx	Detail karya berdasarkan slug.
+(public)/contact/page.tsx	Lokasi halaman kontak, tetapi filenya masih kosong.
+(public)/layout.tsx	Layout yang digunakan bersama oleh halaman publik.
+(public)/loading.tsx	Tampilan sementara saat halaman yang bersangkutan sedang dimuat.
+(public)/studio/layout.tsx	Layout untuk jalur Studio di dalam kelompok publik; masih kosong.
+Perhatikan dua pola khusus berikut.
+[username] dan [slug] adalah dynamic route. Misalnya:
+- /creators/alyaputri
+- /creators/nadias
+- /projects/brand-identity-kopi-senja
+Satu file halaman dapat melayani banyak URL, karena nilai di dalam kurung siku diterima sebagai parameter.
+Contoh sederhananya:
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+
+  return <h1>Profil {username}</h1>;
+}
+
+
+Contoh tersebut hanya ilustrasi cara kerja dynamic route, bukan pengganti kode profil yang ada di proyekmu.
+Yang wajib dipahami: hubungan antara folder, page.tsx, dan URL. Ini adalah dasar navigasi di seluruh ArtSpace.
+B. Halaman autentikasi
+Lokasi: src/app/(auth)/
+File	Fungsi
+(auth)/layout.tsx	Layout bersama untuk halaman autentikasi.
+(auth)/masuk/page.tsx	Halaman masuk akun (/masuk).
+(auth)/daftar/page.tsx	Halaman pendaftaran akun (/daftar).
+Halaman-halaman tersebut merupakan tempat untuk menampilkan proses autentikasi. Komponen formulir yang digunakan berada di folder components/auth/, yang akan dibahas nanti.
+C. Halaman Studio
+Lokasi: src/app/(studio)/
+File	Fungsi
+(studio)/layout.tsx	Layout untuk area Studio.
+(studio)/studio/page.tsx	Halaman utama Studio (/studio).
+(studio)/studio/inbox/page.tsx	Rute kotak masuk, tetapi file masih kosong.
+(studio)/studio/projects/new/page.tsx	Halaman untuk membuat atau mengunggah karya baru.
+(studio)/studio/projects/[id]/edit/page.tsx	Halaman edit karya berdasarkan ID, tetapi file masih kosong.
+Ada hal penting: (studio) dan (public) adalah route group. Nama keduanya tidak otomatis menjadi bagian URL. Sementara folder studio di dalamnya tetap menjadi bagian URL.
+Jadi, struktur (studio)/studio/page.tsx menghasilkan /studio, bukan /(studio)/studio.
+D. API dan halaman sistem
+File	Fungsi
+app/api/projects/route.ts	Endpoint koleksi proyek, biasanya untuk operasi seperti GET dan POST. Masih kosong.
+app/api/projects/[id]/route.ts	Endpoint proyek berdasarkan ID. Masih kosong.
+app/api/collaboration/route.ts	Endpoint kolaborasi. Masih kosong.
+app/error.tsx	UI untuk menangani error pada segmen aplikasi terkait.
+app/not-found.tsx	Halaman ketika rute atau resource tidak ditemukan.
+app/layout.tsx	Root layout yang membungkus aplikasi.
+app/globals.css	CSS global, termasuk gaya dasar dan konfigurasi visual.
+app/favicon.ico	Ikon situs yang ditampilkan browser.
+Endpoint API perlu dibedakan dari halaman biasa:
+- page.tsx mengembalikan tampilan halaman.
+- route.ts menangani permintaan HTTP, misalnya mengambil atau mengirim data.
+Catatan penting: keberadaan file API tidak berarti fitur backend sudah selesai. Ketiga file API di atas masih kosong dalam ZIP yang diperiksa, sehingga endpoint tersebut belum memiliki implementasi.
+3. Memahami src/components/ — komponen antarmuka
+Folder ini berisi bagian-bagian UI yang digunakan untuk menyusun halaman. Misalnya, halaman galeri tidak harus menulis ulang seluruh kode kartu karya. Halaman tersebut cukup menggunakan ProjectGrid, yang kemudian menampilkan beberapa ProjectCard.
+A. components/auth/ — login, daftar, dan modal
+File	Fungsi
+auth-modal.tsx	Modal masuk/daftar yang bisa ditampilkan tanpa berpindah halaman.
+login-form.tsx	Formulir masuk, memeriksa input, lalu memanggil logika login.
+signup-form.tsx	Formulir pendaftaran akun baru dan validasinya.
+Alur yang perlu kamu pahami:
+Pengguna menekan tombol Masuk
+
+AuthModal
+Menampilkan formulir login atau daftar
+
+LoginForm / SignupForm
+Mengambil input pengguna dan memvalidasi data
+
+lib/local/auth.ts
+Menyimpan akun atau memeriksa kredensial
+
+
+Prioritas belajar: tinggi. Pelajari useState, event onChange dan onSubmit, validasi form, serta bagaimana komponen anak memberi tahu komponen induknya bahwa login berhasil.
+Catatan: autentikasi yang sekarang ada merupakan prototipe berbasis penyimpanan browser, bukan sistem autentikasi produksi yang aman.
+B. components/layout/ — navigasi dan kerangka halaman
+File	Fungsi
+top-nav.tsx	Header atas dan logo ArtSpace.
+nav-links.tsx	Navigasi utama, termasuk penyesuaian berdasarkan halaman dan status pengguna.
+auth-nav.tsx	Tombol masuk atau informasi pengguna serta aksi keluar akun.
+site-footer.tsx	Footer dengan tautan eksplorasi, disiplin, dan kreator.
+Contoh hubungan antarkomponen:
+TopNav menggunakan TopNavLinks dan AuthNav. Dengan begitu, kode header tidak perlu menampung seluruh logika navigasi sekaligus.
+Pada site-footer.tsx, daftar tautan disiplin dibentuk melalui DISCIPLINES.map(...). Artinya, satu daftar konstanta digunakan untuk menghasilkan banyak tautan secara otomatis.
+C. components/projects/ — bagian inti galeri
+Folder ini merupakan salah satu bagian terpenting ArtSpace.
+File	Fungsi
+project-card.tsx	Kartu karya yang terlihat di galeri, termasuk informasi kreator dan tombol interaksi.
+project-grid.tsx	Menampilkan kumpulan kartu karya dalam bentuk grid.
+project-cover.tsx	Menampilkan gambar sampul karya atau ilustrasi pengganti.
+cover-art.tsx	Membuat ilustrasi dekoratif berdasarkan warna dan bentuk jika diperlukan.
+discipline-filter.tsx	Tab filter kategori seperti Desain, Ilustrasi, dan Seni Rupa.
+project-actions.tsx	Tombol suka dan simpan pada tampilan detail karya.
+use-interactions.ts	Hook untuk mengatur interaksi suka/simpan dan permintaan login.
+comment-section.tsx	Menampilkan, menambahkan, dan menghapus komentar sesuai aturan aplikasi.
+local-project-view.tsx	Tampilan detail karya yang disimpan secara lokal di browser.
+Perhatikan bahwa beberapa file di atas sengaja dipisah berdasarkan tanggung jawabnya.
+Contohnya, ProjectCard tidak harus mengimplementasikan seluruh logika autentikasi sendiri. Komponen itu menggunakan useInteractions untuk memeriksa status suka/simpan dan menentukan apakah modal login perlu muncul.
+Contoh alur ketika pengguna menyukai karya
+1. ProjectCard atau ProjectActions
+
+Pengguna menekan tombol hati.
+
+2. use-interactions.ts
+
+Hook memeriksa apakah pengguna sudah masuk.
+
+3. Keputusan
+
+Jika belum masuk, minta pengguna masuk. Jika sudah, jalankan fungsi toggleLike.
+
+4. lib/local/activity.ts
+
+Status suka disimpan ke penyimpanan lokal dan tampilan diperbarui.
+
+Prioritas belajar: sangat tinggi. Mulailah dari project-card.tsx, project-grid.tsx, use-interactions.ts, lalu lib/local/activity.ts.
+D. components/home/ dan components/creators/
+File	Fungsi
+home/member-home.tsx	Tampilan beranda anggota, termasuk karya pengguna dan aktivitas terkait.
+creators/creator-card.tsx	Kartu informasi kreator, biasanya berisi nama dan tautan profil.
+member-home.tsx penting untuk dipelajari karena menghubungkan beberapa bagian yang sebelumnya terpisah: autentikasi, karya lokal, aktivitas suka/simpan, serta kartu karya.
+E. components/studio/
+File	Fungsi
+studio/upload-form.tsx	Formulir unggah karya, validasi judul dan deskripsi, pemrosesan gambar, lalu penyimpanan karya.
+Ini merupakan salah satu alur yang paling bagus untuk dipelajari karena menggabungkan banyak konsep React dan TypeScript.
+Urutan prosesnya secara umum:
+1. Pengguna mengisi judul, disiplin, dan deskripsi.
+2. Pengguna memilih file gambar.
+3. processImage() memeriksa dan memproses gambar.
+4. uploadSchema memvalidasi data formulir.
+5. addLocalProject() menyimpan karya.
+6. Aplikasi mengarahkan pengguna ke tampilan yang sesuai.
+F. components/search/
+search/search-bar.tsx menangani input pencarian dan navigasi menuju hasil pencarian. File ini menggunakan konsep seperti state input dan navigasi Next.js.
+Untuk memahami cara pencarian bekerja sepenuhnya, baca juga src/lib/search.ts yang berisi fungsi pencariannya.
+G. components/feedback/
+feedback/empty-state.tsx menampilkan tampilan ketika tidak ada data yang bisa ditampilkan, misalnya belum ada karya yang cocok dengan pencarian. Komponen ini menerima judul, deskripsi, dan tautan tindakan sebagai props sehingga bisa dipakai di berbagai halaman.
+H. components/ui/ — komponen dasar yang dapat digunakan ulang
+File	Fungsi
+button.tsx	Komponen tombol dan fungsi untuk menyusun gaya tombol.
+button-link.tsx	Tautan navigasi dengan tampilan seperti tombol.
+field.tsx	Input dasar, label, dan pesan validasi.
+password-field.tsx	Input kata sandi dengan tombol tampil/sembunyikan.
+select-field.tsx	Dropdown dengan label dan pesan kesalahan.
+card-styles.tsx	Kumpulan kelas CSS yang digunakan bersama oleh kartu.
+Kenapa folder UI penting? Karena kamu tidak perlu membuat ulang desain tombol di setiap halaman. Ketika gaya dasar tombol diubah di satu tempat, seluruh pemakai komponen tersebut dapat ikut konsisten.
+
+4. Memahami src/lib/ — logika di balik ArtSpace
+Kalau components berfokus pada tampilan dan interaksi, lib berisi aturan serta proses yang mendukung aplikasi.
+A. lib/data/ — data awal dan akses data
+File	Fungsi
+mock-projects.ts	Data contoh karya untuk mengisi galeri selama pengembangan.
+mock-creators.ts	Data contoh kreator.
+project-detail.ts	Membantu mengambil atau membentuk informasi detail karya.
+repository.ts	Lapisan untuk membaca data proyek, memisahkan halaman dari sumber data yang digunakan.
+Perbedaan penting:
+- Mock data: data contoh yang disediakan di kode.
+- Local data: data yang disimpan di browser pengguna.
+- Server data: data yang berasal dari backend atau layanan server.
+Ketiganya bukan hal yang sama. Karya contoh yang ditulis di mock-projects.ts tidak otomatis menjadi data permanen di database.
+B. lib/local/ — penyimpanan lokal
+Ini adalah bagian paling penting untuk memahami bagaimana prototipe ArtSpace mempertahankan data tanpa backend.
+File	Fungsi
+store.ts	Membuat mekanisme penyimpanan lokal yang terhubung dengan React.
+auth.ts	Registrasi, login, logout, dan pembacaan pengguna aktif.
+projects.ts	Menambahkan, menghapus, dan membaca karya yang diunggah pengguna.
+activity.ts	Mengelola suka, simpan, komentar, serta ringkasan aktivitas.
+image.ts	Memeriksa, memperkecil, dan mengubah gambar menjadi data URL.
+utils.ts	Membuat ID dan mengubah teks menjadi slug.
+1. store.ts — mesin penyimpanan
+Fungsi utama:
+- createLocalStore() membuat store dengan kunci penyimpanan tertentu.
+- getSnapshot() membaca data yang tersimpan.
+- set() menyimpan data dan memberi tahu komponen yang berlangganan.
+- subscribe() mendaftarkan pendengar perubahan.
+- useLocalStore() menghubungkan store dengan React.
+- useHydrated() mendeteksi apakah aplikasi sudah berjalan di browser.
+Store ini memakai localStorage, useSyncExternalStore, dan mekanisme notifikasi perubahan.
+Contoh sederhana:
+const store = createLocalStore<string[]>(
+  "artspace:contoh",
+  [],
+);
+
+store.set(["Kopi Senja", "Bunga Kristal"]);
+
+const data = store.getSnapshot();
+
+
+Contoh ini menggambarkan pola yang digunakan store, bukan data yang harus kamu tambahkan ke proyek.
+Konsep wajib dipahami: localStorage, JSON, state React, subscription, dan proses hydration. Ini membantu menjelaskan mengapa data bisa tetap tersedia setelah halaman di-refresh.
+2. auth.ts — autentikasi lokal
+Fungsi pentingnya:
+- signUp() membuat akun baru.
+- logIn() memeriksa email dan kata sandi.
+- logOut() menghapus sesi pengguna aktif.
+- getCurrentUser() mengambil pengguna aktif untuk kebutuhan fungsi biasa.
+- useAuth() menyediakan informasi pengguna dan status kesiapan browser.
+- uniqueUsername() mencari username yang belum digunakan.
+Kode menggunakan dua penyimpanan utama:
+- artspace:users untuk daftar akun.
+- artspace:session untuk ID pengguna yang sedang masuk.
+File ini juga memiliki fungsi hash() untuk membuat representasi kata sandi dan toUser() untuk mengubah data akun tersimpan menjadi informasi pengguna yang boleh dipakai aplikasi.
+Penting: hash kata sandi di sini tidak menjadikan autentikasi lokal aman untuk produksi. Pengguna dapat memodifikasi penyimpanan browser, dan sistem belum memiliki otoritas backend yang tepercaya. Untuk aplikasi sungguhan, autentikasi dan sesi harus ditangani dengan arsitektur server yang aman.
+3. projects.ts — pengelolaan karya
+Fungsi yang perlu kamu kenali:
+Fungsi	Tugas
+isLocalId()	Memeriksa apakah ID menggunakan awalan untuk karya lokal.
+toProject()	Mengubah format karya lokal menjadi format Project yang dipakai UI.
+addLocalProject()	Membuat dan menyimpan karya milik pengguna aktif.
+deleteLocalProject()	Menghapus karya jika dimiliki pengguna yang sedang masuk.
+useLocalProjects()	Mengambil daftar karya lokal sebagai hook React.
+useAllProjects()	Menggabungkan karya lokal dan daftar proyek yang diberikan oleh pemanggil.
+Satu hal penting: toProject() adalah contoh fungsi transformasi data. Data yang disimpan dan data yang dibutuhkan komponen tampilan bisa memiliki struktur berbeda, sehingga fungsi ini menjadi penghubung keduanya.
+4. activity.ts — suka, simpan, dan komentar
+File ini menjadi pusat aktivitas pengguna. Hook yang terlihat pada proyek antara lain:
+- useProjectActivity() untuk membaca status aktivitas terhadap suatu karya.
+- useUserActivity() untuk mengambil ID karya yang disukai dan disimpan oleh pengguna aktif.
+Operasi tambah/hapus aktivitas juga dikelola di file ini, misalnya fungsi untuk toggle like, toggle save, dan pengelolaan komentar.
+Prioritas belajar: pahami bagaimana ID pengguna dihubungkan dengan ID karya. Relasi ini membuat aplikasi bisa membedakan karya yang disukai pengguna A dan pengguna B.
+5. image.ts — pemrosesan gambar
+Fungsi penting:
+- loadImage() memuat gambar yang dipilih.
+- processImage() memvalidasi tipe dan ukuran file, mengubah dimensi jika perlu, lalu menghasilkan gambar JPEG.
+Kode membatasi file masukan hingga 10 MB, ukuran sisi terpanjang hingga 1.400 piksel, dan menggunakan kualitas JPEG 0,82.
+Gambar kemudian dikonversi menjadi data URL. Data ini bisa disimpan di localStorage, tetapi ada batas kuota penyimpanan browser. Itulah sebabnya pemrosesan gambar penting.
+6. utils.ts — utilitas data
+- newId() membuat ID unik untuk kebutuhan prototipe.
+- slugify() mengubah teks seperti Bunga Kristal! menjadi slug seperti bunga-kristal.
+Slug berguna untuk URL yang mudah dibaca, sedangkan ID digunakan untuk identitas data.
+C. lib/schemas/ — validasi data
+File	Fungsi
+schemas/auth.ts	Aturan validasi login dan pendaftaran menggunakan Zod.
+schemas/project.ts	Validasi unggah karya dan komentar.
+schemas/collaboration.ts	Masih kosong.
+Contohnya, signupSchema menetapkan bahwa nama harus memenuhi panjang minimal, email harus valid, kata sandi minimal delapan karakter, dan konfirmasi kata sandi harus sama.
+Sementara itu, uploadSchema memeriksa judul, disiplin, dan deskripsi karya.
+Konsep wajib dipahami: validasi di sisi klien meningkatkan kualitas input, tetapi tidak menggantikan validasi di server. Saat backend ditambahkan, data harus diperiksa kembali di server.
+D. lib/search.ts — logika pencarian
+Fungsi	Tugas
+normalize()	Menyamakan huruf besar/kecil, menghilangkan aksen, dan merapikan spasi.
+cleanQuery()	Membersihkan dan membatasi panjang kata kunci.
+firstParam()	Mengambil parameter pertama jika nilainya berupa array.
+matchesQuery()	Mencocokkan seluruh kata pencarian terhadap kumpulan teks.
+Misalnya, pencarian poster hujan dapat menemukan karya berjudul Editorial Poster Musim Hujan, karena setiap kata kunci diperiksa terhadap teks yang tersedia.
+File ini menarik untuk dipelajari karena logikanya relatif independen dari React, sehingga lebih mudah diuji.
+E. lib/constants.ts dan lib/utils.ts
+- constants.ts menyediakan nilai bersama, seperti daftar disiplin karya dan item navigasi.
+- utils.ts menyediakan fungsi cn() yang menggabungkan kelas CSS menggunakan clsx dan tailwind-merge.
+cn() membantu menggabungkan kelas kondisional sekaligus menangani konflik kelas Tailwind. Kamu akan melihatnya dipakai pada tombol, filter, kartu, dan berbagai komponen UI.
+5. Memahami src/types/ — bentuk data aplikasi
+TypeScript menggunakan type untuk menjelaskan struktur data yang diharapkan. Ini membantu editor dan compiler mendeteksi kesalahan sebelum aplikasi dijalankan.
+File	Fungsi
+types/project.ts	Mendefinisikan struktur karya, sampul, warna, dan bentuk dekoratif.
+types/creator.ts	Mendefinisikan struktur data kreator.
+types/collaboration.ts	Masih kosong.
+types/index.ts	Masih kosong.
+Contoh dari types/project.ts:
+export type Project = {
+  id: string;
+  slug: string;
+  title: string;
+  creatorName: string;
+  creatorUsername: string;
+  discipline: Discipline;
+  year: number;
+  likes: number;
+  tone: Tone;
+  shape: Shape;
+  cover?: ProjectCover | undefined;
+};
+
+
+Artinya, sebuah Project memiliki ID, judul, nama kreator, disiplin, tahun, jumlah suka, dan atribut tampilan. Sampul bersifat opsional.
+Tipe Tone membatasi pilihan warna dekoratif menjadi iris, cobalt, atau berry. Tipe Shape membatasi pilihan bentuk menjadi circles, bars, atau arc.
+Mengapa ini penting? Misalnya, kamu tidak sengaja menulis:
+tone: "red"
+
+
+TypeScript dapat menunjukkan kesalahan karena "red" bukan anggota tipe Tone yang didefinisikan.
+Prioritas belajar: pahami hubungan antara types/project.ts, lib/data/mock-projects.ts, dan components/projects/project-card.tsx. Ketiganya mewakili bentuk data, sumber data, dan penggunaan data.
+6. File konfigurasi dan pengujian
+A. File konfigurasi utama
+File	Fungsi
+package.json	Daftar dependensi dan perintah proyek.
+tsconfig.json	Konfigurasi TypeScript, termasuk strict mode dan alias import.
+eslint.config.mjs	Aturan pemeriksaan kualitas dan konsistensi kode.
+next-env.d.ts	Deklarasi tipe yang berkaitan dengan Next.js. Jika tidak ada di ZIP, periksa apakah file tersebut dibuat oleh Next.js di lingkungan proyek.
+Di package.json, perintah utama yang tersedia adalah:
+npm run dev
+npm run build
+npm run start
+npm run lint
+
+
+- npm run dev: menjalankan server pengembangan.
+- npm run build: membangun aplikasi untuk produksi.
+- npm run start: menjalankan hasil build produksi.
+- npm run lint: menjalankan ESLint.
+Dependensi yang paling relevan untuk dipahami:
+Teknologi	Kegunaan di ArtSpace
+Next.js	Routing, halaman, layout, dan API.
+React	Komponen UI, state, dan interaksi.
+TypeScript	Tipe data dan pemeriksaan kesalahan.
+Tailwind CSS	Styling antarmuka.
+Zod	Validasi data.
+Lucide React	Ikon antarmuka.
+clsx	Menggabungkan kelas CSS secara kondisional.
+tailwind-merge	Menangani konflik kelas Tailwind.
+Vitest	Pengujian fungsi.
+B. tests/search.test.ts
+File ini menguji logika pencarian yang berada di lib/search.ts.
+Hubungan antara keduanya:
+- search.ts berisi fungsi yang ingin dipastikan kebenarannya.
+- search.test.ts berisi skenario pengujian terhadap fungsi tersebut.
+Misalnya, pengujian dapat memastikan bahwa pencarian tidak membedakan huruf besar dan kecil atau bahwa semua kata kunci harus cocok.
+Ada satu catatan konfigurasi: package.json yang diperiksa belum mendefinisikan skrip test. Jadi, jangan langsung menganggap npm test tersedia. Kamu dapat menjalankan Vitest melalui npx vitest run, atau menambahkan skrip yang sesuai jika diperlukan.
+7. File yang masih kosong dan perlu diperhatikan
+Dalam ZIP yang kamu kirim, beberapa file belum memiliki implementasi.
+Daftar file kosong
+
+Status ini berdasarkan pemeriksaan isi ZIP, bukan kondisi terbaru folder proyek di komputermu.
+
+Halaman dan layout
+- src/app/(public)/contact/page.tsx
+- src/app/(public)/studio/layout.tsx
+- src/app/(studio)/studio/inbox/page.tsx
+- src/app/(studio)/studio/projects/[id]/edit/page.tsx
+- src/app/playground/page.tsx
+- src/app/playground/playground-client.tsx
+
+API dan fitur kolaborasi
+- src/app/api/projects/route.ts
+- src/app/api/projects/[id]/route.ts
+- src/app/api/collaboration/route.ts
+- src/lib/schemas/collaboration.ts
+- src/types/collaboration.ts
+- src/types/index.ts
+
+File kosong tidak selalu merupakan kesalahan. Bisa jadi file tersebut memang disiapkan untuk fitur yang belum dibuat atau belum masuk ke lingkup penilaian.
+Namun, untuk fitur yang sudah terlihat di antarmuka, kamu perlu memastikan apakah implementasinya benar-benar ada. Contohnya, jika pengguna bisa menekan tombol edit karya, seharusnya tersedia halaman edit yang berfungsi atau tombol tersebut dinonaktifkan sampai fitur siap.
+8. Alur kerja ArtSpace secara keseluruhan
+Sekarang kita gabungkan bagian-bagian tadi. Ini merupakan gambaran hubungan utama antarkomponen dan logika data.
+1. Pengguna membuka halaman
+src/app/(public)/page.tsx
+
+2. Halaman mengambil atau menggabungkan data
+lib/data/ · lib/local/
+
+3. Data ditampilkan melalui komponen
+ProjectGrid → ProjectCard → ProjectCover
+
+4. Pengguna melakukan interaksi
+Pencarian · suka · simpan · komentar · unggah
+
+5. Logika memvalidasi dan memproses
+schemas/ · local/ · search.ts
+
+6. Tampilan diperbarui
+React membaca perubahan store dan merender ulang komponen terkait.
+
+
+Dalam versi prototipe ini, sejumlah data disimpan di browser melalui localStorage. Artinya, alur tersebut belum sepenuhnya bergantung pada backend atau database.

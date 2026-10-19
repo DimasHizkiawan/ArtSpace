@@ -9,7 +9,7 @@ import { getProjectBySlug, getProjectsByCreator } from "@/lib/data/repository";
 import { ProjectCover } from "@/components/projects/project-cover";
 import { CommentSection } from "@/components/projects/comment-section";
 import { LocalProjectView } from "@/components/projects/local-project-view";
-
+import { CreatorLink } from "@/components/creators/creator-link";
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -17,7 +17,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  // Karya unggahan pengguna hanya ada di browser, jadi judulnya tidak bisa dibaca di server.
+  // Karya unggahan pengguna hanya ada di browser,  judulnya tidak bisa dibaca di server.
   if (!project) return { title: "Karya | ArtSpace" };
   return { title: `${project.title} oleh ${project.creatorName}` };
 }
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  // Bukan karya bawaan: mungkin karya unggahan yang tersimpan di browser.
+
   if (!project) return <LocalProjectView slug={slug} />;
 
   const label = DISCIPLINES.find((d) => d.value === project.discipline)?.label ?? "";
@@ -54,21 +54,8 @@ export default async function ProjectDetailPage({ params }: Props) {
               {label} · {project.year}
             </p>
             <h1 className="font-display text-3xl leading-tight">{project.title}</h1>
-            <Link
-              href={`/creators/${project.creatorUsername}`}
-              className="flex items-center gap-3 rounded-xl py-1 hover:text-iris"
-            >
-              <span
-                aria-hidden="true"
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-ink font-bold text-canvas"
-              >
-                {project.creatorName.charAt(0)}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold">{project.creatorName}</span>
-                <span className="block text-sm text-muted">@{project.creatorUsername}</span>
-              </span>
-            </Link>
+            <CreatorLink name={project.creatorName} username={project.creatorUsername} />
+           
           </div>
 
           <ProjectActions projectId={project.id} likes={project.likes} />

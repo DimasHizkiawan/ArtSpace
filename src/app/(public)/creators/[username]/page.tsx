@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { getCreatorByUsername, getProjectsByCreator } from "@/lib/data/repository";
 import { ProjectGrid } from "@/components/projects/project-grid";
-
+import { SocialLinks } from "@/components/profile/social-links";
 export default async function CreatorPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const creator = await getCreatorByUsername(username);
@@ -21,6 +21,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ userna
               <p className="text-sm text-muted">@{creator.username}</p>
               <h1 className="font-display text-4xl">{creator.name}</h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-muted">{creator.bio}</p>
+              <div className="mt-4"><SocialLinks links={creator.links ?? []} /></div>
             </div>
           </div>
           <Link href="/masuk" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ink px-4 text-sm font-semibold text-canvas"><UserPlus className="size-4" /> Ikuti kreator</Link>

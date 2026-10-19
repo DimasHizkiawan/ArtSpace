@@ -1,6 +1,7 @@
 // src/components/profile/social-links.tsx
 import { ExternalLink } from "lucide-react";
 import { linkLabel, type SocialLink } from "@/lib/social";
+import { BrandBadge } from "../ui/brands-icon";
 
 export function SocialLinks({ links }: { links: readonly SocialLink[] }) {
   if (links.length === 0) return null;
@@ -14,6 +15,7 @@ export function SocialLinks({ links }: { links: readonly SocialLink[] }) {
             rel="noopener noreferrer nofollow"
             className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-canvas px-3 text-sm font-medium hover:border-ink"
           >
+            <BrandBadge platform={link.platform} />
             {linkLabel(link)}
             <ExternalLink className="size-3.5 text-muted" aria-hidden="true" />
             <span className="sr-only"> (buka di tab baru)</span>

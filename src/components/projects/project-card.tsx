@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Bookmark, Heart } from "lucide-react";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { cardLink } from "@/components/ui/card-styles";
-import { isLocalId } from "@/lib/local/projects";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/types/project";
 import { ProjectCover } from "./project-cover";
@@ -15,22 +14,8 @@ import { useInteractions } from "./use-interactions";
 const reveal =
   "opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100";
 
-const creatorClass = "inline-flex min-w-0 items-center gap-2 text-sm text-white/90";
-
 export function ProjectCard({ project }: { project: Project }) {
   const { liked, saved, likeCount, request, modal } = useInteractions(project.id, project.likes);
-
-  const creator = (
-    <>
-      <span
-        aria-hidden="true"
-        className="grid size-7 shrink-0 place-items-center rounded-full bg-canvas text-xs font-bold text-ink"
-      >
-        {project.creatorName.charAt(0)}
-      </span>
-      <span className="truncate">{project.creatorName}</span>
-    </>
-  );
 
   return (
     <>
@@ -47,7 +32,7 @@ export function ProjectCard({ project }: { project: Project }) {
               onClick={() => request("save")}
               aria-pressed={saved}
               aria-label={saved ? "Batal simpan karya" : "Simpan karya"}
-              className="relative z-10 grid size-10 place-items-center rounded-full bg-canvas/90 shadow-sm backdrop-blur transition hover:bg-canvas"
+              className="relative z-10 grid size-11 place-items-center rounded-full bg-canvas/90 shadow-sm backdrop-blur transition hover:bg-canvas"
             >
               <Bookmark
                 className={cn("size-4", saved && "fill-iris text-iris")}
@@ -64,23 +49,25 @@ export function ProjectCard({ project }: { project: Project }) {
             </h3>
 
             <div className="flex items-center justify-between gap-3">
-              {isLocalId(project.id) ? (
-                <span className={creatorClass}>{creator}</span>
-              ) : (
-                <Link
-                  href={`/creators/${project.creatorUsername}`}
-                  className={`${creatorClass} relative z-10 hover:text-white hover:underline`}
+              <Link
+                href={`/creators/${project.creatorUsername}`}
+                className="relative z-10 inline-flex min-h-11 min-w-0 items-center gap-2 text-sm text-white/90 hover:text-white hover:underline"
+              >
+                <span
+                  aria-hidden="true"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-canvas text-xs font-bold text-ink"
                 >
-                  {creator}
-                </Link>
-              )}
+                  {project.creatorName.charAt(0)}
+                </span>
+                <span className="truncate">{project.creatorName}</span>
+              </Link>
 
               <button
                 type="button"
                 onClick={() => request("like")}
                 aria-pressed={liked}
                 aria-label={`${liked ? "Batal suka" : "Sukai"} karya (${likeCount} suka)`}
-                className="relative z-10 inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm text-white hover:bg-white/15"
+                className="relative z-10 inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm text-white hover:bg-white/15"
               >
                 <Heart
                   className={cn("size-4", liked && "fill-berry text-berry")}

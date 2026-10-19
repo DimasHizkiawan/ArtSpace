@@ -11,7 +11,7 @@ import { useHydrated } from "@/lib/local/store";
 import { CommentSection } from "./comment-section";
 import { ProjectActions } from "./project-actions";
 import { ProjectCover } from "./project-cover";
-
+import { CreatorLink } from "@/components/creators/creator-link";
 export function LocalProjectView({ slug }: { slug: string }) {
   const hydrated = useHydrated();
   const found = useLocalProjects().find((p) => p.slug === slug);
@@ -57,16 +57,8 @@ export function LocalProjectView({ slug }: { slug: string }) {
             </p>
             <h1 className="font-display text-3xl leading-tight">{found.title}</h1>
             <p className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="grid size-10 shrink-0 place-items-center rounded-full bg-ink font-bold text-canvas"
-              >
-                {found.creatorName.charAt(0)}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold">{found.creatorName}</span>
-                <span className="block text-sm text-muted">@{found.creatorUsername}</span>
-              </span>
+              <CreatorLink name={found.creatorName} username={found.creatorUsername} />
+      
             </p>
           </div>
           <ProjectActions projectId={found.id} likes={0} />

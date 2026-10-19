@@ -11,7 +11,6 @@ const SHELF_COPY: Record<Discipline, string> = {
   seni: "Bentuk, material, dan eksperimen visual.",
 };
 
-// Galeri = etalase pilihan yang dikurasi per disiplin. Pencarian ada di Eksplorasi.
 export default async function GalleryPage() {
   const projects = await getProjects();
   const shelves = DISCIPLINES.map((d) => ({

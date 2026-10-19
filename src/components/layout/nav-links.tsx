@@ -65,7 +65,7 @@ export function BottomNav() {
           {NAV_ITEMS.map((item) => {
             const Icon = ICONS[item.icon];
 
-            // Item ke-4: sudah masuk -> ke Beranda, belum -> buka dialog masuk.
+
             if (item.icon === "user") {
               if (user) {
                 const active = pathname.startsWith("/beranda");
