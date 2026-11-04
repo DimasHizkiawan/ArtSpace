@@ -21,6 +21,8 @@ export type LocalProject = {
   width: number;
   height: number;
   createdAt: string;
+  originalityConfirmed: boolean;
+  originalityConfirmedAt: string;
 };
 
 const EMPTY: LocalProject[] = [];
@@ -55,6 +57,7 @@ export function addLocalProject(input: {
   image: string;
   width: number;
   height: number;
+  originalityConfirmed: boolean;
 }): AddResult {
   const user = getCurrentUser();
   if (!user) return { ok: false, message: "Masuk dulu untuk mengunggah karya." };
@@ -74,6 +77,8 @@ export function addLocalProject(input: {
     width: input.width,
     height: input.height,
     createdAt: new Date().toISOString(),
+    originalityConfirmed: input.originalityConfirmed,
+    originalityConfirmedAt: new Date().toISOString(),
   };
 
   const saved = localProjectsStore.set([project, ...localProjectsStore.getSnapshot()]);

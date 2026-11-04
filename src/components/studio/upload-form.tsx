@@ -17,7 +17,7 @@ import { toFieldErrors } from "@/lib/schemas/auth";
 import { uploadSchema } from "@/lib/schemas/project";
 import { cn } from "@/lib/utils";
 
-const ORDER = ["title", "discipline", "description", "image"];
+const ORDER = ["title", "discipline", "description", "image", "originalityConfirmed"];
 
 export function UploadForm() {
   const router = useRouter();
@@ -65,7 +65,11 @@ export function UploadForm() {
     event.preventDefault();
     const form = event.currentTarget;
 
-    const result = uploadSchema.safeParse(Object.fromEntries(new FormData(form)));
+    const formData = new FormData(form);
+    const result = uploadSchema.safeParse({
+      ...Object.fromEntries(formData),
+      originalityConfirmed: formData.has("originalityConfirmed"),
+    });
     const next = result.success ? {} : toFieldErrors(result.error);
     if (!image) next.image = "Pilih gambar karya terlebih dahulu.";
     if (processing) next.image = "Gambar masih diproses, tunggu sebentar.";
@@ -86,6 +90,7 @@ export function UploadForm() {
       image: image.dataUrl,
       width: image.width,
       height: image.height,
+      originalityConfirmed: result.data.originalityConfirmed,
     });
 
     if (!saved.ok) {
@@ -203,6 +208,31 @@ export function UploadForm() {
           error={errors.description}
           hint="Proses, alat, atau inspirasi. Tampil di halaman karya."
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4 text-sm">
+          <input
+            type="checkbox"
+            name="originalityConfirmed"
+            value="true"
+            aria-invalid={errors.originalityConfirmed ? true : undefined}
+            aria-describedby="originalityConfirmed-pesan"
+            onChange={() => {
+              setErrors((prev) => {
+                const next = { ...prev };
+                delete next.originalityConfirmed;
+                return next;
+              });
+            }}
+            className="mt-0.5 size-4 shrink-0 accent-iris"
+          />
+          <span>
+            Saya menyatakan bahwa karya ini adalah karya saya sendiri dan bukan karya yang
+            sepenuhnya dihasilkan oleh AI.
+          </span>
+        </label>
+        <FieldMessage id="originalityConfirmed-pesan" error={errors.originalityConfirmed} />
       </div>
 
       <Button type="submit" disabled={saving || processing} className="w-full sm:w-auto">

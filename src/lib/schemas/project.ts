@@ -14,6 +14,9 @@ export const uploadSchema = z.object({
     .trim()
     .min(10, "Ceritakan karyamu minimal 10 karakter.")
     .max(1000, "Deskripsi maksimal 1000 karakter."),
+  originalityConfirmed: z
+    .boolean()
+    .refine((confirmed) => confirmed, "Setujui pernyataan karya sebelum memublikasikan."),
 });
 
 export const commentSchema = z.object({
