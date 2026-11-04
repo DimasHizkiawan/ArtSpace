@@ -11,7 +11,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { disciplineName } from "@/lib/constants";
 import { useAuth, useUserByUsername } from "@/lib/local/auth";
-import { toProject, useLocalProjects } from "@/lib/local/projects";
+import { isPublished, toProject, useLocalProjects } from "@/lib/local/projects";
 import { useHydrated } from "@/lib/local/store";
 
 export function LocalCreatorView({ username }: { username: string }) {
@@ -19,7 +19,7 @@ export function LocalCreatorView({ username }: { username: string }) {
   const creator = useUserByUsername(username);
   const { user: me } = useAuth();
   const projects = useLocalProjects()
-    .filter((p) => p.creatorId === creator?.id)
+    .filter((p) => p.creatorId === creator?.id && isPublished(p))
     .map(toProject);
 
   if (!hydrated) {

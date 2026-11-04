@@ -6,7 +6,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { DISCIPLINES } from "@/lib/constants";
-import { toProject, useLocalProjects } from "@/lib/local/projects";
+import { useAuth } from "@/lib/local/auth";
+import { isPublished, toProject, useLocalProjects } from "@/lib/local/projects";
 import { useHydrated } from "@/lib/local/store";
 import { CommentSection } from "./comment-section";
 import { ProjectActions } from "./project-actions";
@@ -14,13 +15,14 @@ import { ProjectCover } from "./project-cover";
 import { CreatorLink } from "@/components/creators/creator-link";
 export function LocalProjectView({ slug }: { slug: string }) {
   const hydrated = useHydrated();
+  const { user } = useAuth();
   const found = useLocalProjects().find((p) => p.slug === slug);
 
   if (!hydrated) {
     return <div aria-busy="true" aria-label="Memuat karya" className="h-96 animate-pulse rounded-3xl bg-surface" />;
   }
 
-  if (!found) {
+  if (!found || (!isPublished(found) && found.creatorId !== user?.id)) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
         <h1 className="font-display text-4xl">Karya tidak ditemukan</h1>

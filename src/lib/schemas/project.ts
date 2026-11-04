@@ -17,6 +17,7 @@ export const uploadSchema = z.object({
   originalityConfirmed: z
     .boolean()
     .refine((confirmed) => confirmed, "Setujui pernyataan karya sebelum memublikasikan."),
+  status: z.enum(["published", "draft"]),
 });
 
 export const commentSchema = z.object({

@@ -23,6 +23,7 @@ export type LocalProject = {
   createdAt: string;
   originalityConfirmed: boolean;
   originalityConfirmedAt: string;
+  status?: "published" | "draft";
 };
 
 const EMPTY: LocalProject[] = [];
@@ -48,6 +49,27 @@ export function toProject(p: LocalProject): Project {
   };
 }
 
+/** Update karya milik pengguna yang sedang masuk. */
+export function updateLocalProject(
+  id: string,
+  input: Pick<LocalProject, "title" | "description" | "discipline" | "status">,
+): boolean {
+  const user = getCurrentUser();
+  if (!user) return false;
+  const all = localProjectsStore.getSnapshot();
+  const next = all.map((project) =>
+    project.id === id && project.creatorId === user.id
+      ? { ...project, ...input, title: input.title.trim(), description: input.description.trim() }
+      : project,
+  );
+  return next.some((project, index) => project !== all[index]) && localProjectsStore.set(next);
+}
+
+export function isPublished(project: LocalProject): boolean {
+  // Karya lama belum memiliki status dan sebelumnya selalu tampil publik.
+  return project.status !== "draft";
+}
+
 type AddResult = { ok: true; project: LocalProject } | { ok: false; message: string };
 
 export function addLocalProject(input: {
@@ -58,6 +80,7 @@ export function addLocalProject(input: {
   width: number;
   height: number;
   originalityConfirmed: boolean;
+  status: "published" | "draft";
 }): AddResult {
   const user = getCurrentUser();
   if (!user) return { ok: false, message: "Masuk dulu untuk mengunggah karya." };
@@ -79,6 +102,7 @@ export function addLocalProject(input: {
     createdAt: new Date().toISOString(),
     originalityConfirmed: input.originalityConfirmed,
     originalityConfirmedAt: new Date().toISOString(),
+    status: input.status,
   };
 
   const saved = localProjectsStore.set([project, ...localProjectsStore.getSnapshot()]);
@@ -108,7 +132,7 @@ export function useLocalProjects(): LocalProject[] {
 /** Karya unggahan (terbaru dulu) digabung dengan karya dari server. */
 export function useAllProjects(serverProjects: Project[]): Project[] {
   const local = useLocalProjects();
-  return useMemo(() => [...local.map(toProject), ...serverProjects], [local, serverProjects]);
+  return useMemo(() => [...local.filter(isPublished).map(toProject), ...serverProjects], [local, serverProjects]);
 }
 
 /** Dipanggil saat nama atau username berubah, supaya karya lama ikut diperbarui. */

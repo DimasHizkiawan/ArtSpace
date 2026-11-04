@@ -17,7 +17,7 @@ import { toFieldErrors } from "@/lib/schemas/auth";
 import { uploadSchema } from "@/lib/schemas/project";
 import { cn } from "@/lib/utils";
 
-const ORDER = ["title", "discipline", "description", "image", "originalityConfirmed"];
+const ORDER = ["title", "discipline", "description", "image", "originalityConfirmed", "status"];
 
 export function UploadForm() {
   const router = useRouter();
@@ -91,6 +91,7 @@ export function UploadForm() {
       width: image.width,
       height: image.height,
       originalityConfirmed: result.data.originalityConfirmed,
+      status: result.data.status,
     });
 
     if (!saved.ok) {
@@ -99,7 +100,7 @@ export function UploadForm() {
       focusField(form, "image");
       return;
     }
-    router.push(`/projects/${saved.project.slug}`);
+    router.push(result.data.status === "published" ? `/projects/${saved.project.slug}` : "/beranda");
   }
 
   if (!ready) {
@@ -210,6 +211,15 @@ export function UploadForm() {
         />
       </div>
 
+      <label htmlFor="status" className="block space-y-1.5 text-sm font-medium">
+        Status publikasi
+        <select id="status" name="status" defaultValue="published" aria-describedby="status-hint" className={controlStyles(Boolean(errors.status), "font-normal")}>
+          <option value="published">Publikasikan sekarang</option>
+          <option value="draft">Simpan sebagai draf</option>
+        </select>
+        <span id="status-hint" className="block text-xs font-normal text-muted">Draf hanya terlihat olehmu dan bisa dipublikasikan nanti dari tab Karya saya.</span>
+      </label>
+
       <div className="space-y-1.5">
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4 text-sm">
           <input
@@ -242,7 +252,7 @@ export function UploadForm() {
             Menyimpan…
           </>
         ) : (
-          "Publikasikan karya"
+          "Simpan karya"
         )}
       </Button>
     </form>

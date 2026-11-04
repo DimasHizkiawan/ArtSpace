@@ -18,7 +18,7 @@ export default function NewProjectPage() {
       <header className="space-y-2">
         <h1 className="font-display text-4xl leading-tight sm:text-5xl">Unggah karya</h1>
         <p className="text-muted">
-          Karya yang kamu unggah tampil di beranda dan bisa disukai, disimpan, dan dikomentari.
+          Pilih untuk langsung memublikasikan karya atau menyimpannya sebagai draf untuk dilanjutkan nanti.
         </p>
       </header>
       <UploadForm />
