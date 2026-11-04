@@ -1,6 +1,5 @@
 import type { Creator } from "@/types/creator";
 
-// Tautan di bawah hanya contoh (halaman utama tiap platform). Ganti dengan tautan asli.
 export const MOCK_CREATORS: Creator[] = [
   {
     username: "chrss",

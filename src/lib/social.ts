@@ -38,7 +38,7 @@ export function normalizeUrl(input: string): string | null {
   return url.href;
 }
 
-/** Baris kosong diabaikan. Galat dikembalikan per nomor baris. */
+/** Baris kosong diabaikan. Eror dikembalikan per nomor baris. */
 export function validateLinks(rows: readonly SocialLink[]): {
   links: SocialLink[];
   errors: Record<number, string>;

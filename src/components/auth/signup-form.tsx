@@ -12,16 +12,18 @@ import { DISCIPLINES } from "@/lib/constants";
 import { signUp } from "@/lib/local/auth";
 import { signupSchema, toFieldErrors } from "@/lib/schemas/auth";
 
+
 type Props = {
-  onSuccess?: () => void;
+  onSuccess?: () => void; // properti opsional return void
 };
 
 const ORDER = ["name", "email", "discipline", "password", "confirm"];
 
 export function SignupForm({ onSuccess }: Props) {
   const router = useRouter();
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pending, setPending] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({}); // • errors: Sebuah kotak kosong ({}) yang disiapkan untuk menampung daftar pesan eror. Jika nanti pengguna salah mengetik, kotak ini akan diisi data seperti { email: "Email tidak valid", password: "Terlalu pendek" }.
+  const [pending, setPending] = useState(false); // • Saklar ini akan diubah menjadi hidup (true) saat formulir sedang mengirim data ke database, agar tombol daftar berubah menjadi efek loading.
+
 
   function focusField(form: HTMLFormElement, name: string) {
     const element = form.elements.namedItem(name);

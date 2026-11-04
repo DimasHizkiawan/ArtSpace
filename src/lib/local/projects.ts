@@ -95,7 +95,7 @@ export function deleteLocalProject(id: string): boolean {
   if (next.length === all.length) return false;
   return localProjectsStore.set(next);
 }
-
+// sinkron otomatis
 export function useLocalProjects(): LocalProject[] {
   return useLocalStore(localProjectsStore);
 }

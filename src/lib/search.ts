@@ -1,7 +1,6 @@
 // src/lib/search.ts
-// Fungsi murni untuk pencarian: tanpa dependensi React, mudah diuji.
 
-/** Huruf kecil, tanpa aksen, spasi berlebih dirapikan. */
+/** Huruf kecil, tanpa aksen, spasi dirapikan. */
 export function normalize(text: string): string {
   return text
     .normalize("NFD")
@@ -22,7 +21,6 @@ export function firstParam(value: string | string[] | undefined): string | undef
 }
 
 /**
- * Cocok jika SETIAP kata dalam `query` ada di salah satu `fields`.
  * "poster hujan" menemukan "Editorial Poster Musim Hujan", dan
  * "alya kopi" menemukan karya Alya Putri berjudul Kopi Senja.
  * Query kosong cocok dengan semuanya.

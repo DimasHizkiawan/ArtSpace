@@ -65,7 +65,7 @@ export function MemberHome({ serverProjects }: { serverProjects: Project[] }) {
   const savedList = all.filter((p) => savedIds.has(p.id));
   const likedCount = all.filter((p) => likedIds.has(p.id)).length;
 
-  // Angka kecil di samping nama tab, bukan kotak statistik besar.
+  // Angka kecil di samping nama tab, 
   const counts: Record<Tab, number | null> = {
     semua: null,
     tersimpan: savedList.length,
